@@ -138,122 +138,40 @@ namespace LogSearchApp
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
 
-            List<string> resultsList = null;
+            List<string> resultsList = new List<string>();
+            string resultString = "";
+            string[] lineSplit;
 
-            switch (userTypeInput.ToLower())
+            foreach(var line in logFileLinesList)
             {
-                case "date":
-                    resultsList = SearchLogFileByDate(userSearchParameterInput, logFileLinesList);
-                    break;
-                case "type":
-                    resultsList = SearchLogFileByType(userSearchParameterInput, logFileLinesList);
-                    break;
-                case "id":
-                    resultsList = SearchLogFileByID(userSearchParameterInput, logFileLinesList);
-                    break;
-                case "module":
-                    resultsList = SearchLogFileByModule(userSearchParameterInput, logFileLinesList);
-                    break;
-            }
+                switch (userTypeInput.ToLower())
+                {
+                    case "date":
+                        resultString = line.Substring(0, line.IndexOf("[") - NUM_OF_WHITESPACES_BETWEEN_DATABLOCKS);
+                        break;
+                    case "type":
+                        lineSplit = line.Split(']');
+                        resultString = lineSplit[0].Substring(line.IndexOf("[") + NUM_OF_CHARACTERS_TO_SKIP);
+                        break;
+                    case "id":
+                        lineSplit = line.Split('}');
+                        resultString = lineSplit[0].Substring(line.IndexOf("{") + NUM_OF_CHARACTERS_TO_SKIP);
+                        break;
+                    case "module":
+                        lineSplit = line.Split(']');
+                        resultString = lineSplit[1].Substring(line.IndexOf("[") + NUM_OF_CHARACTERS_TO_SKIP);
+                        break;
+                }
+
+                if(resultString.Contains(userSearchParameterInput))
+                {
+                    resultsList.Add(line);
+                }
+            }            
 
             _stopwatch.Stop();
 
             return resultsList;
-        }
-
-        /// <summary>
-        /// Searches the log file by date/time when it was written.
-        /// </summary>
-        /// <param name="userSearchParameterInput"> Search parameter, string that is being compared to provide search results. </param>
-        /// <param name="logFileLinesList"> Log file lines list, each entry is a line in the log file. </param>
-        /// <returns> Search results list, 1 result = 1 line in the log file. </returns>
-        private static List<string> SearchLogFileByDate(string userSearchParameterInput, List<string> logFileLinesList)
-        {
-            List<string> searchResults = new List<string>();
-
-            foreach(var line in logFileLinesList)
-            {
-                var dateString = line.Substring(0, line.IndexOf("[") - NUM_OF_WHITESPACES_BETWEEN_DATABLOCKS);
-
-                if(dateString.Contains(userSearchParameterInput))
-                {
-                    searchResults.Add(line);
-                }
-            }
-
-            return searchResults;
-        }
-
-        /// <summary>
-        /// Searches the log file by the type of the log message.
-        /// </summary>
-        /// <param name="userSearchParameterInput"> Search parameter, string that is being compared to provide search results. </param>
-        /// <param name="logFileLinesList"> Log file lines list, each entry is a line in the log file. </param>
-        /// <returns> Search results list, 1 result = 1 line in the log file. </returns>
-        private static List<string> SearchLogFileByType(string userSearchParameterInput, List<string> logFileLinesList)
-        {
-            List<string> searchResults = new List<string>();
-
-            foreach(var line in logFileLinesList)
-            {
-                var lineSplit = line.Split(']');
-                var typeString = lineSplit[0].Substring(line.IndexOf("[") + NUM_OF_CHARACTERS_TO_SKIP);
-
-                if(typeString.Contains(userSearchParameterInput))
-                {
-                    searchResults.Add(line);
-                }
-            }
-
-            return searchResults;
-        }
-
-        /// <summary>
-        /// Searches the log file by the ID of the M-Files vault.
-        /// </summary>
-        /// <param name="userSearchParameterInput"> Search parameter, string that is being compared to provide search results. </param>
-        /// <param name="logFileLinesList"> Log file lines list, each entry is a line in the log file. </param>
-        /// <returns> Search results list, 1 result = 1 line in the log file. </returns>
-        private static List<string> SearchLogFileByID(string userSearchParameterInput, List<string> logFileLinesList)
-        {
-            List<string> searchResults = new List<string>();
-
-            foreach (var line in logFileLinesList)
-            {
-                var lineSplit = line.Split('}');
-                var typeString = lineSplit[0].Substring(line.IndexOf("{") + NUM_OF_CHARACTERS_TO_SKIP);
-
-                if (typeString.Contains(userSearchParameterInput))
-                {
-                    searchResults.Add(line);
-                }
-            }
-
-            return searchResults;
-        }
-
-        /// <summary>
-        /// Searches the log file by the module of the application which generated the message.
-        /// </summary>
-        /// <param name="userSearchParameterInput"> Search parameter, string that is being compared to provide search results. </param>
-        /// <param name="logFileLinesList"> Log file lines list, each entry is a line in the log file. </param>
-        /// <returns> Search results list, 1 result = 1 line in the log file. </returns>
-        private static List<string> SearchLogFileByModule(string userSearchParameterInput, List<string> logFileLinesList)
-        {
-            List<string> searchResults = new List<string>();
-
-            foreach (var line in logFileLinesList)
-            {
-                var lineSplit = line.Split(']');
-                var typeString = lineSplit[1].Substring(line.IndexOf("[") + NUM_OF_CHARACTERS_TO_SKIP);
-
-                if (typeString.Contains(userSearchParameterInput))
-                {
-                    searchResults.Add(line);
-                }
-            }
-
-            return searchResults;
         }
     }
 }
